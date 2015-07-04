@@ -1,0 +1,304 @@
+/* fix to make the empty placeholder invisible until the updated version is released and the placeholder can be removed */
+.angular-ui-tree-empty {
+  border: 0;
+  min-height: 0;
+  background:transparent;
+}
+
+html {
+  line-height: 1;
+}
+
+.main_wrap {
+  display: -webkit-flex;
+  display: flex;
+  justify-content: center;
+  background-color: #EEEEEE;
+}
+
+.container {
+  display: -webkit-flex;
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+  background-color: #C5CFDC;
+  position: relative;
+  height: calc(100vh - 3em);
+}
+
+*::-webkit-scrollbar-track {
+  background-color: #dddddd;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #aaaaaa;
+}
+
+/* Feeds menu */
+#feeds_menu {
+  padding: 0;
+  margin: 0;
+  list-style: none; 
+  width: 20%;
+  text-align: right;
+}  
+
+#feeds_menu li {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+}
+
+#feeds_menu li a {
+  display: block;
+  text-decoration: none;
+  padding-right: 0.2rem;
+}
+
+#feeds_menu li ul {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  right: 0px;
+  top: 5px;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #CCCCCC;
+}
+
+#feeds_menu li:hover ul {
+  display: block;
+}
+
+/* Feeds list */
+#feeds_panel {
+  width: 15rem;
+  overflow: hidden;
+}
+
+#feeds_panel:hover {
+  overflow-y: scroll;
+}
+
+#feeds_panel header {
+  display: -webkit-flex;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width:100%;
+  margin-bottom: 0.5rem;
+}
+
+#feeds_panel h2 {
+  font-size: 0.9em;
+  padding-left: 1rem;
+  text-decoration: none;
+  color: #305371;
+  margin: 0.25rem 0 0.25rem 0;
+}
+
+#feeds_panel .feed_wrap {
+  display: flex;
+  justify-content: space-between;
+}
+
+.feed_wrap span {
+  width: 2rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #314F6F;
+  margin-right: 5px;
+  text-align: right;
+}
+
+#feeds_header_container {
+  width: 14.5rem;
+}
+
+#add_subscription {
+  margin: 0 0 0.5rem 1rem;
+  width: 13rem;
+}  
+
+#add_subscription.ng-invalid-url {
+  border: 2px solid red;
+}
+
+#feeds_tree span.angular-ui-tree-handle {
+  padding: 0 1rem;
+  background-image: url("images/expand_more_18px.svg");
+  background-position: 0px 0px;
+  font-size: 0.75rem;
+}
+
+#feeds_tree li {
+  padding: 0;
+}
+
+#feeds_tree ol ol {
+  margin: 0.5em 0;
+  padding: 0;
+}
+
+.angular-ui-tree-handle, .angular-ui-tree-node {
+  min-height: 1em;
+  line-height: 1.1;
+  padding: 5px 0.5rem 5px 1rem;
+}
+
+.angular-ui-tree-handle:hover {
+  background-color: #AABBC9;
+}
+
+.angular-ui-tree-handle a {
+  display: inline-block;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #314F6F;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 10.5rem;
+  white-space: nowrap;
+}
+
+.angular-ui-tree-handle a:hover {
+  
+}
+
+.angular-ui-tree-placeholder {
+  border-bottom: 1px dotted black;
+  padding:0;
+  margin-left: 1rem;
+  height: 5px!important;
+  min-height: 0;
+  line-height: 5px;
+  width:100%;
+}
+
+/* Navigation */
+nav {
+  height: 3em;
+  display: -webkit-flex;
+  display: flex;
+  color: #eeeeee;  
+  max-width: 1400px;
+  width: 100%;
+  align-items: center;
+}
+
+nav header {
+  width: 15rem;
+}
+
+nav header h1 {
+  font-size: 1.2rem;
+  margin: 0 0 0 1rem;
+}
+
+nav header a {
+  text-decoration: none;
+  color: #ffffff;
+}
+
+nav header a:hover {
+  text-decoration: none;
+  color: #CCC9E0;
+}
+
+nav #feed_title {
+  margin-left: 1rem;
+}
+
+.nav_wrap {
+  display: -webkit-flex;
+  display: flex;
+  justify-content: center;
+  background-color: #93A5BC;
+}
+
+/* Article styles */
+article {
+  background-color: #E9EDF2;
+  margin-bottom: 0.5rem;
+  padding: 0 1rem 0.5rem 1rem;
+  border: 1px solid #E9EDF2;
+  transition: opacity 0.15s;
+}
+
+article header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+article h2 {
+  padding: 0;
+  margin: 0;
+}
+
+article header a {
+  font-size: 1rem;
+  color: #284A66;
+  text-decoration: none;
+}
+
+article header a:hover {
+  color: #0B1B27;
+  text-decoration: underline;
+}
+
+article header span {
+  font-size: 0.8rem;
+  margin-left: auto;  
+}
+
+article.read {
+  opacity: 0.5;
+}
+
+article .section_wrap {
+  display: flex;  
+  justify-content: center;
+}
+
+article section {
+  font-size: 0.95rem;
+  margin: auto;
+  width: 700px;
+  line-height: 1.2;
+}
+
+article footer form {
+  display: inline-block;
+}
+
+article .article_tag {
+  border: 1px solid grey;
+  margin: 0 0.25em;
+  padding: 2px;
+}
+
+#articles_panel {
+  flex: 1;
+  overflow: hidden;
+  background-color: #C0CAD8;
+}
+
+#articles_panel:hover {
+  overflow-y: scroll;
+}
+
+#articles_view {
+  padding: 1rem;
+}
+
+.active_article {
+  border: 1px solid #A09BC3;
+}

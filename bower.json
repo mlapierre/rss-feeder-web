@@ -1,0 +1,23 @@
+{
+  "name": "reader",
+  "version": "0.0.1",
+  "description": "An RSS reader",
+  "homepage": "https://github.com/mlapierre/rss/reader",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "1.3.x",
+    "angular-route": "1.3.x",
+    "angular-loader": "1.3.x",
+    "angular-mocks": "1.3.x",
+    "angular-resource": "1.3.x",
+    "angular-sanitize": "1.3.x",
+    "html5-boilerplate": "~4.3.0",
+    "bootstrap": "3.3.x",
+    "angular-scroll": "0.7.x",
+    "angular-ui-tree": "2.4.x",
+    "angular-bootstrap": "0.13.x",
+    "pouchdb": "latest",
+    "pouchdb-upsert": "latest"
+  }
+}

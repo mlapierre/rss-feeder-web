@@ -1,0 +1,10 @@
+// Declare app level module which depends on views, and components
+angular.module('appConfig', [])
+  .constant("settings", {
+    "apiAddr": "%ADDR%",
+    "apiPort": "%PORT%",
+    "apiBaseURL": "http://%ADDR%:%PORT%/",
+    "couchdbAddr": "%COUCHDB_ADDR%",
+    "couchdbPort": "%COUCHDB_PORT%",
+    "couchdbBaseURL": "http://%COUCHDB_ADDR%:%COUCHDB_PORT%/"
+});

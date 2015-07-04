@@ -1,0 +1,22 @@
+<div ng-repeat="article in articles" ng-click="activateArticle(article.id)" on-finish-render="bindHotkeys">
+  <article id="article_{{article.id}}" ng-class="{ 'active_article': isSelected(article.id),
+                                                 'read': isRead($index) }">
+    <header>
+      <h2><a href="{{article.url}}" target="_blank" ng-click="openArticleSource(article.id)">{{article.title}}</a></h2>
+      <span>{{article.published | date:'short'}}</span>
+    </header>
+    <div class="section_wrap">
+      <section class="article_content" ng-bind-html="getContent(article)" />
+    </div>
+
+    <footer>
+      <form name="add_article_tag_form" ng-submit="addArticleTag()">
+        <input id="add_article_tag_{{article.id}}" type="text" placeholder="New tag..." ng-model="new_article_tag">
+      </form>
+      <span class="article_tag" ng-repeat="tag in article.article_tags">
+        {{tag}}
+        <img src="images/ic_remove_circle_black_18px.svg" ng-click="removeArticleTag($event)" />
+      </span>
+    </footer>
+  </article>
+</div>

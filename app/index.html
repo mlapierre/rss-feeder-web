@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html lang="en" ng-app="readerApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="readerApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="readerApp" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" ng-app="readerApp" class="no-js"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>My AngularJS App</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
+  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
+  <link rel="stylesheet" href="bower_components/angular-ui-tree/dist/angular-ui-tree.min.css">
+  <!--
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+  -->
+  <link rel="stylesheet" href="css/app.css">
+  <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
+  <!-- In production use:
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
+  -->
+  <script type="text/javascript" src="bower_components/angular/angular.js"></script>
+  <script type="text/javascript" src="bower_components/angular-route/angular-route.js"></script>
+  <script type="text/javascript" src="bower_components/angular-resource/angular-resource.js"></script>
+  <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+  <script type="text/javascript" src="bower_components/angular-scroll/angular-scroll.js"></script>
+  <script type="text/javascript" src="bower_components/angular-ui-tree/dist/angular-ui-tree.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+  <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bower_components/pouchdb/dist/pouchdb.min.js"></script>
+  <script type="text/javascript" src="bower_components/pouchdb-upsert/dist/pouchdb.upsert.min.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
+  <script type="text/javascript" src="js/services.js"></script>
+  <script type="text/javascript" src="js/config.js"></script>
+  <script type="text/javascript" src="articles/articles.js"></script>
+  <script type="text/javascript" src="controllers/controllers.js"></script>
+  <script type="text/javascript" src="controllers/nav_controller.js"></script>
+  <script type="text/javascript" src="components/version/version.js"></script>
+  <script type="text/javascript" src="components/version/version-directive.js"></script>
+  <script type="text/javascript" src="components/version/interpolate-filter.js"></script>
+</head>
+<body ng-controller="mainCtrl">
+
+  <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+  <![endif]-->
+  <div class="nav_wrap">
+    <nav ng-controller="navController">
+      <header><h1><a href="/app/">RSS reader app: v<span app-version></span></a></h1></header>
+      <div id="feed_nav" ng-model="feed">
+        <span id="feed_title">{{feed.title}}</span>
+      </div>
+    </nav>
+  </div>
+  <div class="main_wrap">
+    <div class="container">
+
+      <div ng-controller="feedsPanelController" id="feeds_panel">
+        <div id="feeds_header_container">
+          <header>
+            <h2>Subscriptions</h2>
+            <a href="#" ng-click="syncFeeds()"><img src="images/ic_sync_black_18px.svg" /></a>
+            <ul id="feeds_menu">
+              <li>
+                <a href="#/feeds/tag"><img src="images/menu.svg" ></a>
+                <ul>
+                  <li>
+                    <form name="add_feed_tag_form" ng-submit="addFeedTag()">
+                      <input id="add_feed_tag" type="text" placeholder="Add new tag..." ng-model="feed_tag">
+                    </form>
+                  </li>
+                  <li ng-repeat="tag in tags">
+                    <span id="tag_{{tag.id}}">{{tag.name}}</span>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </header>
+          <form name="add_feed_form" ng-submit="addSubscription()">
+            <input id="add_subscription" type="url" placeholder="Add subscription..." ng-model="feed_url">
+          </form>
+
+        </div>
+
+        <div id="feeds_tree" ui-tree="treeCallback" data-drag-delay="150">
+          <ol ui-tree-nodes ng-model="feeds" data-type="tag">
+            <li ng-repeat="tag in feeds" ui-tree-node>
+              <span ui-tree-handle id="tag_{{tag.id}}">{{tag.name}}</span>
+              <ol ui-tree-nodes ng-model="tag.feeds" data-type="feed">
+                <li ng-repeat="feed in tag.feeds" ui-tree-node>
+                <div ui-tree-handle class="feed_wrap">
+                  <a href="#/feed/{{feed.id}}" id="feed_{{feed.id}}">{{feed.title}}</a>
+                  <span class="unread_count" ng-hide="{{feed.unread_count}}===0">{{feed.unread_count}}</span>
+                </div>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </div>
+
+      </div>
+
+      <div id="articles_panel">
+        <div ng-view id="articles_view"/>
+      </div>
+
+      </div>
+    </div> <!-- <div class="container"> -->
+
+  </div> <!-- <div class="main_wrap"> -->
+
+</body>
+</html>
