@@ -22,28 +22,8 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
   }
 })
 
-.controller('ArticlesCtrl', ['$document', '$timeout', '$rootScope', '$scope', '$routeParams', 'Entry', 'Hotkeys', 'Feed',
-  function($document, $timeout, $rootScope, $scope, $routeParams, Entry, Hotkeys, Feed) {
-    if ($routeParams.feedId && Feed.areFeedsLoaded()) {
-      $scope.feedId = $routeParams.feedId;
-      Feed.setCurrentFeed($routeParams.feedId);
-      Feed.getArticles($routeParams.feedId).then(function(articles) {
-        $scope.articles = articles;
-        $scope.$apply();
-      });
-    }
-
-    var feedsLoadedUnbind = $rootScope.$on('feedsLoaded', function() {
-      if ($routeParams.feedId) {
-        $scope.feedId = $routeParams.feedId;
-        Feed.setCurrentFeed($routeParams.feedId);
-        Feed.getArticles($routeParams.feedId).then(function(articles) {
-          $scope.articles = articles;
-          $scope.$apply();
-        });
-      }
-    });
-
+.controller('ArticlesCtrl', ['$document', '$timeout', '$rootScope', '$scope', '$routeParams', 'Entry', 'Hotkeys', 'Feed', 'Event',
+  function($document, $timeout, $rootScope, $scope, $routeParams, Entry, Hotkeys, Feed, Event) {
     $scope.$on('$destroy', feedsLoadedUnbind);
     $scope.new_article_tag;
     $scope.selectedId = -1;
@@ -53,6 +33,16 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
       var input_elm = angular.element($('#add_article_tag_' + $scope.selectedId));
       Hotkeys.assignHotkeyEvents(input_elm);
     });
+
+    var feedsLoadedUnbind = $rootScope.$on('feedsLoaded', function() {
+      if ($routeParams.feedId) {
+        showArticles();
+      }
+    });
+
+    if ($routeParams.feedId && Feed.areFeedsLoaded()) {
+      showArticles();
+    }
 
     $scope.activateArticle = function(id) {
       if ($scope.selectedId !== id) {
@@ -231,12 +221,12 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
     }
 
     function logEvent(event) {
-      //console.log(event + ' ' + $scope.articles[$scope.selectedIndex].id);
-      Feed.logEvent({
-                          "event": event,
-                          "article_index": getIndexFromId($scope.selectedId),
-                          "article_id": $scope.selectedId
-                        });
+      Event.log({
+        "event": event,
+        "feed_ref": $routeParams.feedId,
+        "article_index": getIndexFromId($scope.selectedId),
+        "article_id": $scope.selectedId
+      });
     }
 
     function hideSelectedArticle() {
@@ -264,6 +254,15 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
       var article_id = '#article_' + $scope.selectedId;
       var article_elm = angular.element($(article_id));
       angular.element($('#articles_panel')).scrollToElement(article_elm, 7, 0);
+    }
+
+    function showArticles() {
+      $scope.feedId = $routeParams.feedId;
+      Feed.setCurrentFeed($routeParams.feedId);
+      Feed.getArticles($routeParams.feedId).then(function(articles) {
+        $scope.articles = articles;
+        $scope.$apply();
+      });
     }
 
     function showSelectedArticle() {
