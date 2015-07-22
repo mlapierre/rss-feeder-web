@@ -1,15 +1,11 @@
 angular.module('readerAppControllers', ['duScroll'])
 
-.controller('feedsPanelController', function($scope, $location, $timeout, Feed, Tag) {
-  Tag.query(function(tags) {
+.controller('feedsPanelController', function($rootScope, $scope, $location, $timeout, Feed, Tag) {
+  // Initialisation. Populate collection of tags and feeds
+  Feed.getTagsAndFeeds(function(tags) {
     $timeout(function() {
       $scope.tags = tags;
-    }, 0);
-  });
-  Feed.getTagsAndFeeds(function(feeds) {
-    $timeout(function() {
-      $scope.feeds = feeds;
-      console.log(feeds);
+      $rootScope.$broadcast('feedsLoaded');
     }, 0);
   });
 
@@ -25,17 +21,6 @@ angular.module('readerAppControllers', ['duScroll'])
       $scope.saveTags();
     }
   };
-
-  // $scope.saveTags = function() {
-  //   var tags = $scope.feeds;
-  //   for (var i = 0; i < tags.length; i++) {
-  //     tags[i].order = i;
-  //     for (var j = 0; j < tags[i].feeds.length; j++) {
-  //       tags[i].feeds[j].order = j;
-  //     }
-  //   }
-  //   Feed.updateTags(tags);
-  // };
 
   $scope.addSubscription = function() {
     var input_scope = angular.element($('#add_subscription')).scope();
@@ -55,6 +40,11 @@ angular.module('readerAppControllers', ['duScroll'])
       console.log("Valid tag: " + $scope.feed_tag);
       Tag.save({name: input_scope.feed_tag});
     }
+  };
+
+  $scope.getRef = function(feed_id) {
+    var ref_match = feed_id.match(/feed_(.*)_http/);
+    return ref_match[1];
   };
 
   $scope.syncFeeds = function() {

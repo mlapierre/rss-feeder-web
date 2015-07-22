@@ -48,7 +48,7 @@
   <![endif]-->
   <div class="nav_wrap">
     <nav ng-controller="navController">
-      <header><h1><a href="/app/">RSS reader app: v<span app-version></span></a></h1></header>
+      <header><h1><a href="/">RSS reader app: v<span app-version></span></a></h1></header>
       <div id="feed_nav" ng-model="feed">
         <span id="feed_title">{{feed.title}}</span>
       </div>
@@ -64,7 +64,7 @@
             <a href="#" ng-click="syncFeeds()"><img src="images/ic_sync_black_18px.svg" /></a>
             <ul id="feeds_menu">
               <li>
-                <a href="#/feeds/tag"><img src="images/menu.svg" ></a>
+                <a href="feeds/tag"><img src="images/menu.svg" ></a>
                 <ul>
                   <li>
                     <form name="add_feed_tag_form" ng-submit="addFeedTag()">
@@ -85,14 +85,14 @@
         </div>
 
         <div id="feeds_tree" ui-tree="treeCallback" data-drag-delay="150">
-          <ol ui-tree-nodes ng-model="feeds" data-type="tag">
-            <li ng-repeat="tag in feeds" ui-tree-node>
+          <ol ui-tree-nodes ng-model="tags" data-type="tag">
+            <li ng-repeat="tag in tags" ui-tree-node>
               <span ui-tree-handle id="tag_{{tag.id}}">{{tag.name}}</span>
               <ol ui-tree-nodes ng-model="tag.feeds" data-type="feed">
                 <li ng-repeat="feed in tag.feeds" ui-tree-node>
                 <div ui-tree-handle class="feed_wrap">
-                  <a href="#/feed/{{feed.id}}" id="feed_{{feed.id}}">{{feed.title}}</a>
-                  <span class="unread_count" ng-hide="{{feed.unread_count}}===0">{{feed.unread_count}}</span>
+                  <a href="/#/feed/{{getRef(feed._id)}}" id="feed_{{getRef(feed._id)}}">{{feed.title}}</a>
+                  <span class="unread_count" ng-hide="feed.unread_count === 0">{{feed.unread_count}}</span>
                 </div>
                 </li>
               </ol>

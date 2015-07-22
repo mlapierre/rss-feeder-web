@@ -22,12 +22,29 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
   }
 })
 
-.controller('ArticlesCtrl', ['$document', '$timeout', '$scope', '$routeParams', 'Articles', 'Entry', 'Hotkeys', 'Feed',
-  function($document, $timeout, $scope, $routeParams, Articles, Entry, Hotkeys, Feed) {
-    if ($routeParams.feedId) {
+.controller('ArticlesCtrl', ['$document', '$timeout', '$rootScope', '$scope', '$routeParams', 'Entry', 'Hotkeys', 'Feed',
+  function($document, $timeout, $rootScope, $scope, $routeParams, Entry, Hotkeys, Feed) {
+    if ($routeParams.feedId && Feed.areFeedsLoaded()) {
       $scope.feedId = $routeParams.feedId;
-      $scope.articles = Articles.getFromFeed($routeParams.feedId);
+      Feed.setCurrentFeed($routeParams.feedId);
+      Feed.getArticles($routeParams.feedId).then(function(articles) {
+        $scope.articles = articles;
+        $scope.$apply();
+      });
     }
+
+    var feedsLoadedUnbind = $rootScope.$on('feedsLoaded', function() {
+      if ($routeParams.feedId) {
+        $scope.feedId = $routeParams.feedId;
+        Feed.setCurrentFeed($routeParams.feedId);
+        Feed.getArticles($routeParams.feedId).then(function(articles) {
+          $scope.articles = articles;
+          $scope.$apply();
+        });
+      }
+    });
+
+    $scope.$on('$destroy', feedsLoadedUnbind);
     $scope.new_article_tag;
     $scope.selectedId = -1;
     $scope.fetching = false;
@@ -167,7 +184,7 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
           && (unread_count - ($scope.$$childTail.$index - selectedIndex + 1) > 0)
           && selectedIndex > ($scope.articles.length - 6)) {
         $scope.fetching = true;
-        Articles.fetch($scope, Math.min(5, unread_count));
+        Feed.fetch($scope, Math.min(5, unread_count));
       }
     }
 
@@ -215,7 +232,7 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
 
     function logEvent(event) {
       //console.log(event + ' ' + $scope.articles[$scope.selectedIndex].id);
-      Articles.logEvent({
+      Feed.logEvent({
                           "event": event,
                           "article_index": getIndexFromId($scope.selectedId),
                           "article_id": $scope.selectedId
