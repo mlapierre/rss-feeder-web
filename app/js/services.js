@@ -19,17 +19,47 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
 })
 
 .factory('Database', function($resource, settings) {
-  //PouchDB.plugin(require('pouchdb-upsert'));
+  PouchDB.plugin('pouchdb-upsert');
 
   var db = new PouchDB('feeder');
   var userdb = new PouchDB('feeder_user');
 
+  function addOrAppendTag(doc, tag_name) {
+    if (!doc.hasOwnProperty('tags')) {
+      doc.tags = [tag_name];
+      return doc
+    }
+
+    if (doc.tags.indexOf(tag_name) !== -1) {
+      return false;
+    }
+
+    doc.tags.push(tag_name);
+    return doc;
+  }
+
   function sync() {
     db.replicate.from('http://localhost:5984/feeder');
+    syncUserDB();
+  }
+
+  function syncUserDB() {
     userdb.sync('http://localhost:5984/feeder_user');
   }
 
   return {
+    addArticleTag: function(article, tag_name) {
+      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
+        return addOrAppendTag(doc, tag_name);
+      }).then(function() {
+        return db.upsert(article._id, function(doc) {
+          return addOrAppendTag(doc, tag_name);
+        });
+      }).catch(function(err) {
+        console.log(err);
+      });
+    },
+
     addFeed: function(feed_link) {
       var feeder_api = $resource('http://localhost:3000/feeds/add', {});
       return feeder_api.save({link: feed_link})
@@ -104,8 +134,21 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
 
     sync: function() {
       sync();
-    }
+    },
 
+    markRead: function(article_id, feed_id, read_at) {
+      db.markArticleRead(article_id, feed_id, read_at);
+      //read_resource.save({entry_id: _entry_id, 'read_at': read_at});
+    },
+
+    markUnread: function(article_id, feed_id) {
+      db.markArticleRead(article_id, feed_id);
+      //read_resource.save({entry_id: _entry_id, 'read_at': null});
+    },
+
+    removeTag: function(article_id, feed_id, tag_name) {
+      db.removeArticleTag(article_id, feed_id, tag_name);
+    }
   };
 })
 
@@ -188,33 +231,36 @@ function(db, $resource, settings, $rootScope) {
   };
 }])
 
-.factory('Entry', function($resource, settings) {
-  var read_resource = $resource(settings.apiBaseURL + 'entries/read/:entry_id',
-    { entry_id: '@entry_id' }
-  );
+.factory('Article', ['Database', function(db) {
+  // var read_resource = $resource(settings.apiBaseURL + 'entries/read/:entry_id',
+  //   { entry_id: '@entry_id' }
+  // );
 
-  var tag_resource = $resource(settings.apiBaseURL + 'entries/:entry_id/tag/:name',
-    { entry_id: '@entry_id', name: '@name' }
-  );
+  // var tag_resource = $resource(settings.apiBaseURL + 'entries/:entry_id/tag/:name',
+  //   { entry_id: '@entry_id', name: '@name' }
+  // );
 
   return {
-    addTag: function(_entry_id, tag_name) {
-      tag_resource.save({entry_id: _entry_id, name: tag_name});
+    addTag: function(article_id, feed_id, tag_name) {
+      db.addArticleTag(article_id, feed_id, tag_name);
     },
 
-    markRead: function(_entry_id, read_at) {
-      read_resource.save({entry_id: _entry_id, 'read_at': read_at});
+    markRead: function(article_id, feed_id, read_at) {
+      //db.markArticleRead(article_id, feed_id, read_at);
+      //read_resource.save({entry_id: _entry_id, 'read_at': read_at});
     },
 
-    markUnread: function(_entry_id) {
-      read_resource.save({entry_id: _entry_id, 'read_at': null});
+    markUnread: function(article_id, feed_id) {
+      //db.markArticleRead(article_id, feed_id);
+      //read_resource.save({entry_id: _entry_id, 'read_at': null});
     },
 
-    removeTag: function(_entry_id, tag_name) {
-      tag_resource.remove({entry_id: _entry_id, name: tag_name});
+    removeTag: function(article_id, feed_id, tag_name) {
+      //db.removeArticleTag(article_id, feed_id, tag_name);
+      //tag_resource.remove({entry_id: _entry_id, name: tag_name});
     }
   };
-})
+}])
 
 .factory('Hotkeys', function($document) {
   var keyHanders = {
