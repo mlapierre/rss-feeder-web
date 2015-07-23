@@ -241,6 +241,9 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
     function markSelectedArticleRead() {
       var article = getArticleFromId($scope.selectedId);
       var read_at = (new Date(Date.now())).toISOString();
+      var elm = angular.element($('#article_' + $scope.selectedId));
+
+      elm.addClass('read');
       article.read_at = read_at;
       Article.markRead(article, read_at);
       logEvent('article_read');
@@ -248,6 +251,9 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
 
     function markSelectedArticleUnread() {
       var article = getArticleFromId($scope.selectedId);
+      var elm = angular.element($('#article_' + $scope.selectedId));
+
+      elm.removeClass('read');
       article.read_at = null;
       Article.markUnread(article);
       logEvent('article_unread');

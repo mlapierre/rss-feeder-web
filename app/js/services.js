@@ -47,17 +47,21 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     userdb.sync('http://localhost:5984/feeder_user');
   }
 
+  function upsertDBs(article, elm, changeFunc) {
+    userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
+      return changeFunc(doc, elm);
+    }).then(function() {
+      return db.upsert(article._id, function(doc) {
+        return changeFunc(doc, elm);
+      });
+    }).catch(function(err) {
+      console.log(err);
+    });
+  }
+
   return {
     addArticleTag: function(article, tag_name) {
-      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
-        return addOrAppendTag(doc, tag_name);
-      }).then(function() {
-        return db.upsert(article._id, function(doc) {
-          return addOrAppendTag(doc, tag_name);
-        });
-      }).catch(function(err) {
-        console.log(err);
-      });
+      upsertDBs(article, tag_name, addOrAppendTag);
     },
 
     addFeed: function(feed_link) {
@@ -137,7 +141,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     markArticleRead: function(article, at) {
-      function updateOrSkip(doc, at) {
+      upsertDBs(article, at, function(doc) {
         if (!doc.read_at) {
           doc.read_at = at;
           return doc;
@@ -147,50 +151,23 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
         }
         doc.read_at = at;
         return doc;
-      }
-
-      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
-        return updateOrSkip(doc, at);
-      }).then(function() {
-        return db.upsert(article._id, function(doc) {
-          return updateOrSkip(doc, at);
-        });
-      }).catch(function(err) {
-        console.log(err);
       });
     },
 
-    markArticleUnread: function(article, at) {
-      function nullOrSkip(doc) {
+    markArticleUnread: function(article) {
+      upsertDBs(article, [], function(doc) {
         if (doc.read_at === null) {
           return false;
         }
         doc.read_at = null;
         return doc;
-      }
-
-      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
-        return nullOrSkip(doc);
-      }).then(function() {
-        return db.upsert(article._id, function(doc) {
-          return nullOrSkip(doc);
-        });
-      }).catch(function(err) {
-        console.log(err);
       });
     },
 
     removeArticleTag: function(article, tag_name) {
-      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
+      upsertDBs(article, tag_name, function(doc, tag_name) {
         doc.tags.splice(doc.tags.indexOf(tag_name), 1);
         return doc;
-      }).then(function() {
-        return db.upsert(article._id, function(doc) {
-          doc.tags.splice(doc.tags.indexOf(tag_name), 1);
-          return doc;
-        });
-      }).catch(function(err) {
-        console.log(err);
       });
     }
   };
