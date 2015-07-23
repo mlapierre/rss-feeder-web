@@ -2,21 +2,14 @@
 
 angular.module('readerAppServices', ['ngResource', 'appConfig'])
 
-.factory('Event', function($resource, settings) {
-  //var db = new PouchDB(settings.couchdbBaseURL + 'article_events');
-
+.factory('Event', ['$resource', 'settings', 'Database', function($resource, settings, db) {
   return {
     log: function(event) {
-      //console.log(event);
-    // event["_id"] = (new Date(Date.now())).toISOString() + '-' + getRandString();
-    // db.put(event).then(function (response) {
-
-    // }).catch(function (err) {
-    //   console.log(err);
-    // });
+      event["_id"] = 'event_' + (new Date(Date.now())).toISOString() + '-' + (Math.random()+1).toString(36).slice(2,10);
+      db.addEvent(event);
     }
   }
-})
+}])
 
 .factory('Database', function($resource, settings) {
   PouchDB.plugin('pouchdb-upsert');
@@ -62,6 +55,12 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
   return {
     addArticleTag: function(article, tag_name) {
       upsertDBs(article, tag_name, addOrAppendTag);
+    },
+
+    addEvent: function(event) {
+      userdb.put(event).catch(function (err) {
+        console.log(err);
+      });
     },
 
     addFeed: function(feed_link) {
@@ -187,10 +186,6 @@ function(db, $resource, settings, $rootScope) {
         }
       }
     }
-  }
-
-  function getRandString() {
-    return (Math.random()+1).toString(36).slice(2,10);
   }
 
   return {
