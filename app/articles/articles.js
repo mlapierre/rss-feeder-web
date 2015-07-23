@@ -68,9 +68,8 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
           return;
         }
         input_scope.article.tags.push(input_scope.new_article_tag);
-        var article = getArticleFromId($scope.selectedId);
-        article.feed_ref = $routeParams.feedId;
-        Article.addTag(article, input_scope.new_article_tag);
+        input_scope.article.feed_ref = $routeParams.feedId;
+        Article.addTag(input_scope.article, input_scope.new_article_tag);
         $('#add_article_tag_' + $scope.selectedId).val('');
       }
     }
@@ -159,10 +158,12 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
 
     $scope.removeArticleTag = function(event) {
       var tag = event.target.parentElement.innerText.trim();
-      var input_scope = angular.element($('#add_article_tag_' + $scope.selectedId)).scope();
-      var tag_idx = input_scope.article.article_tags.indexOf(tag);
-      input_scope.article.article_tags.splice(tag_idx, 1);
-      Article.removeTag(selectedId, $routeParams.feedId, tag);
+      var article_id = event.target.parentElement.parentElement.parentElement.id;
+      var scope = angular.element($('#' + article_id)).scope();
+
+      scope.article.feed_ref = $routeParams.feedId;
+      scope.article.tags.splice(scope.article.tags.indexOf(tag), 1);
+      Article.removeTag(scope.article, tag);
     }
 
     function fetchArticles(selected_article_id) {

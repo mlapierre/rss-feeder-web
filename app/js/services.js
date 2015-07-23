@@ -146,8 +146,18 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
       //read_resource.save({entry_id: _entry_id, 'read_at': null});
     },
 
-    removeTag: function(article_id, feed_id, tag_name) {
-      db.removeArticleTag(article_id, feed_id, tag_name);
+    removeArticleTag: function(article, tag_name) {
+      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
+        doc.tags.splice(doc.tags.indexOf(tag_name), 1);
+        return doc;
+      }).then(function() {
+        return db.upsert(article._id, function(doc) {
+          doc.tags.splice(doc.tags.indexOf(tag_name), 1);
+          return doc;
+        });
+      }).catch(function(err) {
+        console.log(err);
+      });
     }
   };
 })
@@ -236,13 +246,9 @@ function(db, $resource, settings, $rootScope) {
   //   { entry_id: '@entry_id' }
   // );
 
-  // var tag_resource = $resource(settings.apiBaseURL + 'entries/:entry_id/tag/:name',
-  //   { entry_id: '@entry_id', name: '@name' }
-  // );
-
   return {
-    addTag: function(article_id, feed_id, tag_name) {
-      db.addArticleTag(article_id, feed_id, tag_name);
+    addTag: function(article, tag_name) {
+      db.addArticleTag(article, tag_name);
     },
 
     markRead: function(article_id, feed_id, read_at) {
@@ -255,9 +261,8 @@ function(db, $resource, settings, $rootScope) {
       //read_resource.save({entry_id: _entry_id, 'read_at': null});
     },
 
-    removeTag: function(article_id, feed_id, tag_name) {
-      //db.removeArticleTag(article_id, feed_id, tag_name);
-      //tag_resource.remove({entry_id: _entry_id, name: tag_name});
+    removeTag: function(article, tag_name) {
+      db.removeArticleTag(article, tag_name);
     }
   };
 }])
