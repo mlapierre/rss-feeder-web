@@ -2,7 +2,7 @@
   <article id="article_{{article.id}}" ng-class="{ 'active_article': isSelected(article.id),
                                                  'read': isRead($index) }">
     <header>
-      <h2><a href="{{article.url}}" target="_blank" ng-click="openArticleSource(article.id)">{{article.title}}</a></h2>
+      <h2><a href="{{article.link}}" target="_blank" ng-click="openArticleSource(article.id)">{{article.title}}</a></h2>
       <span>{{article.published | date:'short'}}</span>
     </header>
     <div class="section_wrap">
