@@ -136,14 +136,48 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
       sync();
     },
 
-    markRead: function(article_id, feed_id, read_at) {
-      db.markArticleRead(article_id, feed_id, read_at);
-      //read_resource.save({entry_id: _entry_id, 'read_at': read_at});
+    markArticleRead: function(article, at) {
+      function updateOrSkip(doc, at) {
+        if (!doc.read_at) {
+          doc.read_at = at;
+          return doc;
+        }
+        if (doc.read_at == at) {
+          return false;
+        }
+        doc.read_at = at;
+        return doc;
+      }
+
+      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
+        return updateOrSkip(doc, at);
+      }).then(function() {
+        return db.upsert(article._id, function(doc) {
+          return updateOrSkip(doc, at);
+        });
+      }).catch(function(err) {
+        console.log(err);
+      });
     },
 
-    markUnread: function(article_id, feed_id) {
-      db.markArticleRead(article_id, feed_id);
-      //read_resource.save({entry_id: _entry_id, 'read_at': null});
+    markArticleUnread: function(article, at) {
+      function nullOrSkip(doc) {
+        if (doc.read_at === null) {
+          return false;
+        }
+        doc.read_at = null;
+        return doc;
+      }
+
+      userdb.upsert('article_' + article.feed_ref + '_' + article.id, function(doc) {
+        return nullOrSkip(doc);
+      }).then(function() {
+        return db.upsert(article._id, function(doc) {
+          return nullOrSkip(doc);
+        });
+      }).catch(function(err) {
+        console.log(err);
+      });
     },
 
     removeArticleTag: function(article, tag_name) {
@@ -242,23 +276,17 @@ function(db, $resource, settings, $rootScope) {
 }])
 
 .factory('Article', ['Database', function(db) {
-  // var read_resource = $resource(settings.apiBaseURL + 'entries/read/:entry_id',
-  //   { entry_id: '@entry_id' }
-  // );
-
   return {
     addTag: function(article, tag_name) {
       db.addArticleTag(article, tag_name);
     },
 
-    markRead: function(article_id, feed_id, read_at) {
-      //db.markArticleRead(article_id, feed_id, read_at);
-      //read_resource.save({entry_id: _entry_id, 'read_at': read_at});
+    markRead: function(article, at) {
+      db.markArticleRead(article, at);
     },
 
-    markUnread: function(article_id, feed_id) {
-      //db.markArticleRead(article_id, feed_id);
-      //read_resource.save({entry_id: _entry_id, 'read_at': null});
+    markUnread: function(article, at) {
+      db.markArticleUnread(article, at);
     },
 
     removeTag: function(article, tag_name) {

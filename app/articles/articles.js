@@ -242,14 +242,14 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
       var article = getArticleFromId($scope.selectedId);
       var read_at = (new Date(Date.now())).toISOString();
       article.read_at = read_at;
-      Article.markRead($scope.selectedId, $routeParams.feedId, read_at);
+      Article.markRead(article, read_at);
       logEvent('article_read');
     }
 
     function markSelectedArticleUnread() {
       var article = getArticleFromId($scope.selectedId);
       article.read_at = null;
-      Article.markUnread($scope.selectedId, $routeParams.feedId);
+      Article.markUnread(article);
       logEvent('article_unread');
     }
 
