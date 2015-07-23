@@ -2,11 +2,32 @@
 
 angular.module('readerAppServices', ['ngResource', 'appConfig'])
 
+.factory('Event', function($resource, settings) {
+  //var db = new PouchDB(settings.couchdbBaseURL + 'article_events');
+
+  return {
+    log: function(event) {
+      //console.log(event);
+    // event["_id"] = (new Date(Date.now())).toISOString() + '-' + getRandString();
+    // db.put(event).then(function (response) {
+
+    // }).catch(function (err) {
+    //   console.log(err);
+    // });
+    }
+  }
+})
+
 .factory('Database', function($resource, settings) {
   //PouchDB.plugin(require('pouchdb-upsert'));
 
-  //var db = new PouchDB('http://localhost:5984/feeder');
   var db = new PouchDB('feeder');
+  var userdb = new PouchDB('feeder_user');
+
+  function sync() {
+    db.replicate.from('http://localhost:5984/feeder');
+    userdb.sync('http://localhost:5984/feeder_user');
+  }
 
   return {
     addFeed: function(feed_link) {
@@ -14,11 +35,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
       return feeder_api.save({link: feed_link})
         .$promise.then(function(res) {
           console.log(res);
-          db.replicate
-            .from('http://localhost:5984/feeder')
-            .then(function (result) {
-              console.log(result);
-            });
+          sync();
           return res;
         });
     },
@@ -40,7 +57,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     getTagsAndFeeds: function(callback) {
-      db.allDocs({
+      userdb.allDocs({
         include_docs: true,
         startkey: 'tag_',
         endkey: 'tag_\uffff'
@@ -59,7 +76,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     getTags: function(callback) {
-      db.allDocs({
+      userdb.allDocs({
         include_docs: true,
         startkey: 'tag_',
         endkey: 'tag_\uffff'
@@ -74,7 +91,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     saveTag: function(tag) {
-      db.putIfNotExists({
+      userdb.putIfNotExists({
         "_id": "tag_" + tag.name,
         "type": "tag",
         "created_at": new Date().toISOString()
@@ -86,7 +103,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     sync: function() {
-      return db.sync('feeder', 'http://localhost:5984/feeder');
+      sync();
     }
 
   };
@@ -116,11 +133,15 @@ function(db, $resource, settings, $rootScope) {
     addFeed: function(link) {
       db.addFeed(link)
         .then(function(feed) {
-          _tags.untagged.feeds.append({
-            id: encodeURLComponent(feed.title),
-            title: feed.title,
-            unread_count: feed.unread
-          });
+          _tags.map(function(tag) {
+            if (tag.name === 'untagged') {
+              tag.feeds.push({
+                id: encodeURIComponent(feed.title),
+                title: feed.title,
+                unread_count: feed.unread
+              });
+            }
+          })
         }).catch(function (err) {
           console.log(err);
         });
@@ -130,14 +151,25 @@ function(db, $resource, settings, $rootScope) {
       return _tags !== undefined;
     },
 
+    currentFeedCount: function() {
+      return this.getCurrentFeed().unread_count;
+    },
+
+    decrementCurrentFeedCount: function() {
+      var feed = this.getCurrentFeed();
+      feed.unread_count = Math.max(0, feed.unread_count - 1);
+    },
+
+    getArticles: function(feed_id) {
+      var feed = getFeed(feed_id);
+      return db.getArticles(feed._id);
+    },
+
     getTagsAndFeeds: function(callback) {
-      db.sync().then(function(res) {
-        console.log(res);
-      }).catch(function(err) {
-        console.log(error);
-      });
+      // TODO handle syncing better than this
+      db.sync();
       db.getTagsAndFeeds(function(tags) {
-        _tags = tags;//.feeds;
+        _tags = tags;
         callback(_tags);
       });
     },
@@ -146,13 +178,12 @@ function(db, $resource, settings, $rootScope) {
       return getFeed(current_feed_id);
     },
 
-    setCurrentFeed: function(feed_id) {
-      current_feed_id = feed_id;
+    incrementCurrentFeedCount: function() {
+      this.getCurrentFeed().unread_count += 1;
     },
 
-    getArticles: function(feed_id) {
-      var feed = getFeed(feed_id);
-      return db.getArticles(feed._id);
+    setCurrentFeed: function(feed_id) {
+      current_feed_id = feed_id;
     }
   };
 }])
