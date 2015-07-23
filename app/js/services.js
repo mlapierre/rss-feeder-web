@@ -80,7 +80,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
         endkey: 'article_\uffff'
       }).then(function(docs) {
         return docs.rows.filter(function(res) {
-          return res.doc.feed_id === feed_id;
+          return res.doc.feed_id === feed_id && !res.doc.read_at;
         }).map(function(rows){
           return rows.doc;
         });
