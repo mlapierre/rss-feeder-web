@@ -27,10 +27,6 @@ angular.module('readerAppControllers', ['duScroll'])
     if (input_scope.add_feed_form.$valid) {
       console.log("Valid feed");
       Feed.addFeed(input_scope.feed_url);
-      Feed.getTagsAndFeeds(function(feeds) {
-        $scope.feeds = feeds;
-        console.log(feeds);
-      });
     }
   };
 
@@ -43,13 +39,11 @@ angular.module('readerAppControllers', ['duScroll'])
   };
 
   $scope.getRef = function(feed_id) {
-    var ref_match = feed_id.match(/feed_(.*)_http/);
-    return ref_match[1];
+    if (feed_id) {
+      var ref_match = feed_id.match(/feed_(.*)_http/);
+      return ref_match[1];
+    }
   };
-
-  $scope.syncFeeds = function() {
-    Feed.syncFeeds();
-  }
 })
 
 .controller('mainCtrl', ['Hotkeys',

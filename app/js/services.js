@@ -64,13 +64,8 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     addFeed: function(feed_link) {
-      var feeder_api = $resource('http://localhost:3000/feeds/add', {});
-      return feeder_api.save({link: feed_link})
-        .$promise.then(function(res) {
-          console.log(res);
-          sync();
-          return res;
-        });
+      var feeder_api = $resource('http://localhost:3000/feeds/add');
+      return feeder_api.save({link: feed_link}).$promise;
     },
 
     getArticles: function(feed_id) {
@@ -151,6 +146,29 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
         doc.read_at = at;
         return doc;
       });
+
+      userdb.allDocs({
+        include_docs: true,
+        startkey: 'tag_',
+        endkey: 'tag_\uffff'
+      }).then(function(docs) {
+        var feed_id = article.feed_id;
+
+        for (var i = 0; i<docs.rows.length; i++) {
+          userdb.upsert(docs.rows[i].id, function(doc) {
+            for (var j = 0; j<doc.feeds.length; j++) {
+              if (doc.feeds[j]._id === feed_id) {
+                doc.feeds[j].unread_count--;
+                return doc;
+              }
+            }
+            return false;
+          });
+        }
+
+      }).catch(function(err) {
+        console.log(err);
+      });
     },
 
     markArticleUnread: function(article) {
@@ -161,6 +179,30 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
         doc.read_at = null;
         return doc;
       });
+
+      userdb.allDocs({
+        include_docs: true,
+        startkey: 'tag_',
+        endkey: 'tag_\uffff'
+      }).then(function(docs) {
+        var feed_id = article.feed_id;
+
+        for (var i = 0; i<docs.rows.length; i++) {
+          userdb.upsert(docs.rows[i].id, function(doc) {
+            for (var j = 0; j<doc.feeds.length; j++) {
+              if (doc.feeds[j]._id === feed_id) {
+                doc.feeds[j].unread_count++;
+                return doc;
+              }
+            }
+            return false;
+          });
+        }
+
+      }).catch(function(err) {
+        console.log(err);
+      });
+
     },
 
     removeArticleTag: function(article, tag_name) {
@@ -188,21 +230,37 @@ function(db, $resource, settings, $rootScope) {
     }
   }
 
+  function updateFeedPanel(feed) {
+    var found;
+    var untagged;
+
+    _tags.forEach(function(tag) {
+      if (tag.name === 'untagged') {
+        untagged = tag;
+      }
+      tag.feeds.forEach(function(_feed) {
+        if (_feed.title === feed.title) {
+          found = true;
+          _feed.unread_count = feed.unread_count;
+        }
+      });
+    });
+
+    if (!found) {
+      untagged.feeds.push({
+        id: encodeURIComponent(feed.title),
+        title: feed.title,
+        unread_count: feed.unread_count
+      });
+    }
+  }
+
   return {
     addFeed: function(link) {
-      db.addFeed(link)
-        .then(function(feed) {
-          _tags.map(function(tag) {
-            if (tag.name === 'untagged') {
-              tag.feeds.push({
-                id: encodeURIComponent(feed.title),
-                title: feed.title,
-                unread_count: feed.unread
-              });
-            }
-          })
-        }).catch(function (err) {
-          console.log(err);
+      return db.addFeed(link)
+        .then(function(res) {
+          db.sync();
+          updateFeedPanel(res.feed);
         });
     },
 
@@ -217,6 +275,10 @@ function(db, $resource, settings, $rootScope) {
     decrementCurrentFeedCount: function() {
       var feed = this.getCurrentFeed();
       feed.unread_count = Math.max(0, feed.unread_count - 1);
+    },
+
+    fetch: function() {
+      //TODO
     },
 
     getArticles: function(feed_id) {
