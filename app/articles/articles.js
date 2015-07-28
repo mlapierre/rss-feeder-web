@@ -109,22 +109,18 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
       if (!$scope.isRead(getIndexFromId($scope.selectedId))) {
         Feed.decrementCurrentFeedCount();
         markSelectedArticleRead();
-        hideSelectedArticle();
       }
-
+      hideSelectedArticle();
       if (getIndexFromId($scope.selectedId) !== $scope.$$childTail.$index) {
-        if ($scope.isRead(getIndexFromId($scope.selectedId))) {
-          logEvent('blur_article');
-        }
-
         $scope.selectedId = getNextId($scope.selectedId);
-        $scope.$apply();
-        logEvent('focus_article');
+      } else if (getIndexFromId($scope.selectedId) > 0) {
+        $scope.selectedId = getPrevId($scope.selectedId);
       }
+      $scope.$apply();
+      logEvent('focus_article');
       scrollToArticle($scope.selectedId);
       var input_elm = angular.element($('#add_article_tag_' + $scope.selectedId));
       Hotkeys.assignHotkeyEvents(input_elm);
-
       fetchArticles($scope.selectedId);
     }
 
@@ -134,14 +130,12 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
         $scope.selectedId = getPrevId($scope.selectedId);
         logEvent('focus_article');
       }
-      $scope.$apply();
-
       if ($scope.isRead(getIndexFromId($scope.selectedId))) {
         Feed.incrementCurrentFeedCount();
         markSelectedArticleUnread();
         showSelectedArticle();
       }
-
+      $scope.$apply();
       var input_elm = angular.element($('#add_article_tag_' + $scope.selectedId));
       Hotkeys.assignHotkeyEvents(input_elm);
     }
