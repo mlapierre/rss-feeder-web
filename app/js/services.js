@@ -32,8 +32,8 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
   }
 
   function sync() {
-    db.replicate.from('http://localhost:5984/feeder');
     syncUserDB();
+    db.replicate.from('http://localhost:5984/feeder');
   }
 
   function syncUserDB() {
@@ -74,8 +74,26 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
         startkey: 'article_',
         endkey: 'article_\uffff'
       }).then(function(docs) {
+        var count = 0;
         return docs.rows.filter(function(res) {
-          return res.doc.feed_id === feed_id && !res.doc.read_at;
+          return res.doc.feed_id === feed_id && !res.doc.read_at && count++ < 10;
+        }).map(function(rows){
+          return rows.doc;
+        });
+      }).catch(function(err) {
+        console.log(err);
+      });
+    },
+
+    getArticleAfter: function(id, feed_id) {
+      return db.allDocs({
+        include_docs: true,
+        startkey: id,
+        endkey: 'article_\uffff'
+      }).then(function(docs) {
+        var count = 0;
+        return docs.rows.filter(function(res) {
+          return res.doc.feed_id === feed_id && !res.doc.read_at && res.doc._id !== id && count++ < 1;
         }).map(function(rows){
           return rows.doc;
         });
@@ -240,8 +258,8 @@ function(db, $resource, settings, $rootScope) {
       }
       tag.feeds.forEach(function(_feed) {
         if (_feed.title === feed.title) {
-          found = true;
           _feed.unread_count = feed.unread_count;
+          found = true;
         }
       });
     });
@@ -277,8 +295,12 @@ function(db, $resource, settings, $rootScope) {
       feed.unread_count = Math.max(0, feed.unread_count - 1);
     },
 
-    fetch: function() {
-      //TODO
+    fetchAfter: function(id, feed_id) {
+      var feed = this.getCurrentFeed();
+      return db.getArticleAfter(id, feed._id)
+        .then(function(res) {
+          return res[0];
+        })
     },
 
     getArticles: function(feed_id) {

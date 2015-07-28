@@ -154,6 +154,7 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
         Feed.decrementCurrentFeedCount();
         markSelectedArticleRead();
       }
+      $scope.$apply();
     }
 
     $scope.removeArticleTag = function(event) {
@@ -173,11 +174,21 @@ angular.module('readerApp.articles', ['ngRoute', 'ngSanitize'])
 
       var unread_count = Feed.currentFeedCount();
       var selectedIndex = getIndexFromId($scope.selectedId);
+
       if (unread_count > 0
-          && (unread_count - ($scope.$$childTail.$index - selectedIndex + 1) > 0)
-          && selectedIndex > ($scope.articles.length - 6)) {
+          && selectedIndex > ($scope.articles.length - 3)) {
+
         $scope.fetching = true;
-        Feed.fetch($scope, Math.min(5, unread_count));
+        Feed.fetchAfter($scope.articles[$scope.articles.length-1]._id)
+          .then(function(res) {
+            if(res) {
+              $scope.articles.push(res);
+              $scope.$apply();
+            }
+            $scope.fetching = false;
+          }).catch(function(err) {
+            console.log(err);
+          });
       }
     }
 
