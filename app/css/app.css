@@ -42,10 +42,10 @@ html {
 #feeds_menu {
   padding: 0;
   margin: 0;
-  list-style: none; 
+  list-style: none;
   width: 20%;
   text-align: right;
-}  
+}
 
 #feeds_menu li {
   display: inline-block;
@@ -122,7 +122,7 @@ html {
 #add_subscription {
   margin: 0 0 0.5rem 1rem;
   width: 13rem;
-}  
+}
 
 #add_subscription.ng-invalid-url {
   border: 2px solid red;
@@ -167,7 +167,7 @@ html {
 }
 
 .angular-ui-tree-handle a:hover {
-  
+
 }
 
 .angular-ui-tree-placeholder {
@@ -185,7 +185,7 @@ nav {
   height: 3em;
   display: -webkit-flex;
   display: flex;
-  color: #eeeeee;  
+  color: #eeeeee;
   max-width: 1400px;
   width: 100%;
   align-items: center;
@@ -256,7 +256,7 @@ article header a:hover {
 
 article header span {
   font-size: 0.8rem;
-  margin-left: auto;  
+  margin-left: auto;
 }
 
 article.read {
@@ -264,7 +264,7 @@ article.read {
 }
 
 article .section_wrap {
-  display: flex;  
+  display: flex;
   justify-content: center;
 }
 
@@ -273,6 +273,11 @@ article section {
   margin: auto;
   width: 700px;
   line-height: 1.2;
+}
+
+article section img {
+  max-width: 100%;
+  width: auto;
 }
 
 article footer form {
