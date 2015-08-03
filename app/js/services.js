@@ -69,18 +69,15 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     getArticles: function(feed_id) {
-      return db.allDocs({
+      return db.query('feeder/article_by_feed', {
+        key: feed_id,
         include_docs: true,
-        startkey: 'article_',
-        endkey: 'article_\uffff'
-      }).then(function(docs) {
-        var count = 0;
-        return docs.rows.filter(function(res) {
-          return res.doc.feed_id === feed_id && !res.doc.read_at && count++ < 10;
-        }).map(function(rows){
+        limit: 10
+      }).then(function (result) {
+        return result.rows.map(function(rows){
           return rows.doc;
         });
-      }).catch(function(err) {
+      }).catch(function (err) {
         console.log(err);
       });
     },
@@ -265,11 +262,7 @@ function(db, $resource, settings, $rootScope) {
     });
 
     if (!found) {
-      untagged.feeds.push({
-        id: encodeURIComponent(feed.title),
-        title: feed.title,
-        unread_count: feed.unread_count
-      });
+      untagged.feeds.push(feed);
     }
   }
 
