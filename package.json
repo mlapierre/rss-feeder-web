@@ -16,16 +16,10 @@
   "scripts": {
     "postinstall": "bower install && npm run init-config",
     "prestart": "npm install",
-    "init-config": "node scripts/initconfig.js",
-    "start": "node server.js",
+    "init-config": "API_ADDR=10.181.15.218 FEEDERDB_ADDR=$API_ADDR node scripts/initconfig.js",
+    "start": "npm run init-config && node server.js",
     "pretest": "npm install",
-    "test": "karma start karma.conf.js",
-    "test-single-run": "karma start karma.conf.js  --single-run",
     "preupdate-webdriver": "npm install",
-    "update-webdriver": "webdriver-manager update",
-    "preprotractor": "npm run update-webdriver",
-    "protractor": "protractor e2e-tests/protractor.conf.js",
-    "update-index-async": "node -e \"require('shelljs/global'); sed('-i', /\\/\\/@@NG_LOADER_START@@[\\s\\S]*\\/\\/@@NG_LOADER_END@@/, '//@@NG_LOADER_START@@\\n' + sed(/sourceMappingURL=angular-loader.min.js.map/,'sourceMappingURL=bower_components/angular-loader/angular-loader.min.js.map','app/bower_components/angular-loader/angular-loader.min.js') + '\\n//@@NG_LOADER_END@@', 'app/index-async.html');\""
   },
   "dependencies": {
     "body-parser": "^1.13.2",
