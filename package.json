@@ -19,7 +19,7 @@
     "init-config": "API_ADDR=10.181.15.218 FEEDERDB_ADDR=$API_ADDR node scripts/initconfig.js",
     "start": "npm run init-config && node server.js",
     "pretest": "npm install",
-    "preupdate-webdriver": "npm install",
+    "preupdate-webdriver": "npm install"
   },
   "dependencies": {
     "body-parser": "^1.13.2",
