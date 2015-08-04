@@ -46,8 +46,8 @@ angular.module('readerAppControllers', ['duScroll'])
   };
 })
 
-.controller('mainCtrl', ['Hotkeys',
-  function(Hotkeys) {
+.controller('mainCtrl', ['Hotkeys', 'Database',
+  function(Hotkeys, DB) {
     function getLastVisibleEntry(scope) {
       var last = scope.$$childHead.$index;
       scope.articles.forEach(function(v, i) {
@@ -58,9 +58,14 @@ angular.module('readerAppControllers', ['duScroll'])
       return last;
     }
 
-    var input_elm = angular.element($('#add_subscription'));
-    Hotkeys.init();
-    Hotkeys.assignHotkeyEvents(input_elm);
+    $(function() {
+      var input_elm = angular.element($('#add_subscription'));
+      Hotkeys.init();
+      Hotkeys.assignHotkeyEvents(input_elm);
+
+      DB.init();
+      DB.sync(); // TODO recurring sync
+    });
   }
 ]);
 
