@@ -20,9 +20,7 @@ app.use(logger());
 // app.use(passport.session());
 // app.use(express.Router());
 
-var appEnv = { bind: 'localhost', port: 8000, url: 'http://localhost:8000'}
-
-app.listen(appEnv.port, appEnv.bind, function() {
-  console.log("server starting on " + appEnv.url);
+var server = app.listen(8000, function() {
+  console.log('Server listening at http://%s:%s',
+    server.address().address, server.address().port);
 });
-
