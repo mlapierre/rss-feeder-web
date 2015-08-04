@@ -33,7 +33,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
 
   function sync() {
     syncUserDB();
-    db.replicate.from('http://localhost:5984/feeder').then(function() {
+    db.replicate.from(settings.couchdbBaseURL + 'feeder').then(function() {
       console.log("feeder sync complete");
     }).catch(function(err) {
       console.log(err);
@@ -41,7 +41,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
   }
 
   function syncUserDB() {
-    userdb.sync('http://localhost:5984/feeder_user').then(function() {
+    userdb.sync(settings.couchdbBaseURL + 'feeder_user').then(function() {
       console.log("feeder_user sync complete");
     }).catch(function(err) {
       console.log(err);
@@ -72,7 +72,7 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     addFeed: function(feed_link) {
-      var feeder_api = $resource('http://localhost:3000/feeds/add');
+      var feeder_api = $resource(settings.apiBaseURL + 'feeds/add');
       return feeder_api.save({link: feed_link}).$promise;
     },
 
