@@ -33,11 +33,19 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
 
   function sync() {
     syncUserDB();
-    db.replicate.from('http://localhost:5984/feeder');
+    db.replicate.from('http://localhost:5984/feeder').then(function() {
+      console.log("feeder sync complete");
+    }).catch(function(err) {
+      console.log(err);
+    });
   }
 
   function syncUserDB() {
-    userdb.sync('http://localhost:5984/feeder_user');
+    userdb.sync('http://localhost:5984/feeder_user').then(function() {
+      console.log("feeder_user sync complete");
+    }).catch(function(err) {
+      console.log(err);
+    });
   }
 
   function upsertDBs(article, elm, changeFunc) {
@@ -83,17 +91,16 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
     },
 
     getArticleAfter: function(id, feed_id) {
-      return db.allDocs({
+      return db.query('feeder/article_by_feed_read_pub', {
         include_docs: true,
-        startkey: id,
-        endkey: 'article_\uffff'
+        startkey: [feed_id, null, id, null],
+        endkey: [feed_id, null, "article_\uffff", {}],
+        limit: 1,
+        skip: 1
       }).then(function(docs) {
-        var count = 0;
-        return docs.rows.filter(function(res) {
-          return res.doc.feed_id === feed_id && !res.doc.read_at && res.doc._id !== id && count++ < 1;
-        }).map(function(rows){
-          return rows.doc;
-        });
+        if (docs.rows.length > 0) {
+          return docs.rows[0].doc;
+        }
       }).catch(function(err) {
         console.log(err);
       });
@@ -129,6 +136,45 @@ angular.module('readerAppServices', ['ngResource', 'appConfig'])
         });
         callback(tags);
       }).catch(function(err) {
+        console.log(err);
+      });
+    },
+
+    init: function() {
+      // Create views
+      var ddoc = {
+        _id: '_design/feeder',
+        views: {
+          article_by_feed_read_pub: {
+            map: function (doc) {
+              emit([doc.feed_id, doc.read_at, doc._id, doc.published_at]);
+            }.toString()
+          },
+          article_by_feed: {
+            map: function (doc) {
+              if (!doc.read_at && doc.type === "article") {
+                emit(doc.feed_id)
+              }
+            }.toString()
+          }
+        }
+      };
+      db.upsert(ddoc._id, function(doc) {
+        if (!doc.views) {
+          return ddoc;
+        }
+
+        for (var new_view in ddoc.views) {
+          if (!doc.views.hasOwnProperty(new_view)) {
+            return ddoc;
+          }
+        }
+        return false;
+      }).then(function (doc) {
+        if (doc.updated) {
+          console.log("Views created");
+        }
+      }).catch(function (err) {
         console.log(err);
       });
     },
@@ -292,7 +338,7 @@ function(db, $resource, settings, $rootScope) {
       var feed = this.getCurrentFeed();
       return db.getArticleAfter(id, feed._id)
         .then(function(res) {
-          return res[0];
+          return res;
         })
     },
 
@@ -302,8 +348,6 @@ function(db, $resource, settings, $rootScope) {
     },
 
     getTagsAndFeeds: function(callback) {
-      // TODO handle syncing better than this
-      db.sync();
       db.getTagsAndFeeds(function(tags) {
         _tags = tags;
         callback(_tags);
